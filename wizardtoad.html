@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi portafolio</title>
+    <link rel="stylesheet" href="style/style2.css">
+    <style>
+        .foto {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%; 
+            margin: 10px;
+        }
+
+        .large-image {
+    width: 300px; 
+    height: 200px; 
+    object-fit: cover; 
+    cursor: pointer;
+    display: block;
+    margin: 20px auto; 
+}
+
+.img-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 20px; 
+    margin: 20px 0; 
+}
+
+.img-container img {
+    width: 300px; 
+    height: auto;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.img-container img:nth-child(3) {
+    margin-top: 20px;
+    order: 2; 
+}
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+        }
+
+        
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); 
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            margin: auto;
+            position: absolute;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            transition: transform 0.25s ease;
+            cursor: zoom-in;
+            transform: translate(-50%, -50%);
+
+        }
+
+        .modal-content:hover {
+    transform: scale(1.1); 
+}
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="img/fotodeperfil.jpg" alt="Foto de perfil" class="foto">
+        <h1>Mi portafolio de proyectos</h1> 
+        <nav>
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="sobremi.html">Sobre mí</a></li>
+                <li><a href="misproyectos.html">Mis proyectos</a></li>
+                <li><a href="misredes.html">Mis redes</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <h2>Wizard Toad: Script.</h2>
+        <h3>Magia, Movimiento, Vida y Escudo.</h3>
+
+       
+        <img id="imagenes" src="img/wizard1.png" alt="Imagen del script de magia y movimiento" class="large-image" onclick="openModal(this)">
+        
+        <h4>Magia y Movimiento.</h4>
+        <p>El primer script controla el cambio de magia del jugador. Al presionar las teclas "1" y "2", la magia cambia entre bolas de fuego y rayos. En esta misma sección, se controla el movimiento del jugador: al presionar las flechas de dirección, el personaje se mueve en esa dirección.</p>
+
+        <h4>Disparar Magia.</h4>
+        <p>El segundo script controla el disparo de la bola de fuego. Al iniciar el juego, la magia se configura automáticamente en "fireball". Cada vez que se presiona la barra espaciadora y la magia está configurada como "fireball", el personaje crea un clon de la bola de fuego y cambia el sprite a uno que muestra al personaje disparando.</p>
+
+        <h4>Reducción de Vida.</h4>    
+        <p>El último script se encarga de la reducción de vida. Cada vez que el jugador tiene contacto con un enemigo o sus proyectiles, su vida se reduce en un punto. El jugador cuenta con 0.5 segundos de invencibilidad para evitar daños consecutivos, especialmente si hay muchos enemigos cerca. Un efecto de brillo indica cuándo se recibe daño.</p>
+
+        <h2>Escudo y rayo.</h2>
+        <img id="imagenes" src="img/wizard2.png" alt="Imagen del script de escudo" class="large-image" onclick="openModal(this)">
+        
+        <p>La primera columna de la derecha controla el escudo. Cuando el valor del escudo es mayor a cero, al presionar la tecla "E", el jugador cambia de sprite temporalmente, volviéndose inmune al daño y eliminando a los enemigos que lo toquen. Después de usar el escudo, la "carga" se establece en cero y tiene un tiempo de recarga de 10 segundos.</p>
+        <p>La segunda columna controla las cargas del rayo y su uso. Cada vez que se presiona la barra espaciadora, y la magia está configurada como rayo, se crea un clon del sprite de rayo. El jugador tiene tres cargas de rayo, y cada uso consume una carga. Una vez agotadas, hay un tiempo de recarga antes de poder usar el rayo nuevamente. El rayo es la magia más poderosa del juego.</p>
+        
+        <h2>Escudo.</h2>
+        <img id="imagenes" src="img/escudo.png" alt="Imagen del script de escudo" class="large-image" onclick="openModal(this)">
+        <p>Esto solamente se encarga de controlar la visibilidad del escudo, cambiando entre un sprite y otro, es solamente estetico.</p>
+        
+
+        <h2>Fuego y Rayo: Script</h2>
+        <div class="img-container">
+            <img id="imagenes" src="img/magiafuego.png" alt="Script de magia de fuego" class="large-image" onclick="openModal(this)">
+            <img id="imagenes" src="img/magiarayo.png" alt="Script de magia de rayo" class="large-image" onclick="openModal(this)">
+        </div>
+
+        <p>Estos scripts manejan los sprites de magia de fuego y rayo. Ambos cumplen funciones similares, pero la bola de fuego permanece activa hasta impactar con un enemigo o el borde de la pantalla.</p>
+        
+        <h2>Vida y game over.</h2>
+        <div class="img-container">
+            <img id="imagenes" src="img/vidas.png" alt="Script de vida" class="large-image" onclick="openModal(this)">
+            <img id="imagenes" src="img/gameover.png" alt="Script de game over" class="large-image" onclick="openModal(this)">
+        </div>
+        <p>Este es el responsable de mantener el conteo de vidas. Es bastante sencillo. Al comenzar el juego, las vidas se establecen automáticamente en tres y, al momento de que las vidas sean menores a uno, se creará un clon de "game over" y el juego acabará. El script de "game over" se explica por sí mismo, así que no hace falta describirlo.</p>
+        
+        <h2>Butterfly.</h2>
+        <div class="img-container">
+            <img id="imagenes" src="img/butherfly1.png" alt="Script de butherfly1" class="large-image" onclick="openModal(this)">
+            <img id="imagenes" src="img/butherfly2.png" alt="Script de butherfly2" class="large-image" onclick="openModal(this)">
+        </div>
+        <p>Este "script" se encarga del manejo de todo lo relacionado con la variante de enemigo "butterfly", la cual vendría a ser una especie de jefe, pero que, por problemas, no pude convertir en un verdadero jefe como tal, volviéndose simplemente un enemigo más fuerte. Al obtener 100 puntos, este enemigo aparecerá, apuntando en dirección al jugador para dispararle proyectiles de veneno. Lo que controla cuándo es eliminado es igual al de los enemigos normales.</p>
+        
+        <h2>Poison.</h2>
+        <img id="imagenes" src="img/poison.png" alt="Imagen del script de poison" class="large-image" onclick="openModal(this)">
+        <p>Este es el que controla la creacion de los proyectiles del enemigo butterfly, su funcionamiento es igual a la bola de fuego del jugador.</p>
+
+        <h2>Beetle.</h2>
+        <div class="img-container">
+            <img id="imagenes" src="img/beetle1.png" alt="Script de beetle1" class="large-image" onclick="openModal(this)">
+            <img id="imagenes" src="img/beetle2.png" alt="Script de beetle2" class="large-image" onclick="openModal(this)">
+            <img id="imagenes" src="img/beetle3.png" alt="Script de beetle3" class="large-image" onclick="openModal(this)">
+
+        </div>
+        <p>Este es el más complejo y largo de todo el juego. Al momento de iniciar el juego, los puntos obtenidos se establecen en cero. Luego, al alcanzar 200 puntos, el juego elegirá un número al azar entre 1 y 4 para asignarle la etiqueta "beetle" o "dragonfly" al enemigo, siendo diferentes variables del mismo enemigo, solamente teniendo diferente sprite. Su funcionamiento es el mismo. <br>El enemigo normal, "beetle", tiene dos puntos de vida, mientras que la variable "dragonfly" cuenta con cinco. Al momento de tocar al jugador o a sus proyectiles (rayo o fuego), se les restará vida, aunque morirán instantáneamente si tocan al jugador para evitar matarlo de un solo golpe. Al morir el enemigo normal, otorga 10 puntos, mientras que la variable otorga 20. Al alcanzar 200 puntos, su velocidad se verá aumentada.</p>
+        
+
+
+    </main>
+
+    <footer>
+        <p>© Compumundo Hiper Mega Red 2024 Rinku Kanji Productions. Todos los derechos reservados.</p>    
+    </footer>
+
+    
+    <div id="myModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div id="caption"></div>
+    </div>
+
+  
+       
+       
+    <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi portafolio</title>
+    <link rel="stylesheet" href="style/style2.css">
+    <style>
+        .foto {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 10px;
+        }
+
+       
+    </style>
+</head>
+<body>
+    <header>
+        <img src="img/fotodeperfil.jpg" alt="Foto de perfil" class="foto">
+        <h1>Mi portafolio de proyectos.</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="sobremi.html">Sobre mí</a></li>
+                <li><a href="misproyectos.html">Mis proyectos</a></li>
+                <li><a href="misredes.html">Mis redes</a></li>
+            
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Índice</h2>
+        <ul>
+            <li><a href="#controlar-jugador">Controlar jugador.</a></li>
+            <li><a href="#objeto-interactivo">Objeto interactivo.</a></li>
+            <li><a href="#select-deselect">Select-Deselect.</a></li>
+            <li><a href="#pick-up-object">Pick up object.</a></li>
+            <li><a href="#inventory">Inventory.</a></li>
+            <li><a href="#maquina">Maquina.</a></li>
+            <li><a href="#maquinaUI">MaquinaUI.</a></li>
+            <li><a href="#galleta">Galleta.</a></li>
+            <li><a href="#alimentar_Ciervo">Alimentar ciervo.</a></li>
+            <li><a href="#puntos">Puntos.</a></li>
+            <li><a href="#seguir_Galleta">Seguir galleta.</a></li>
+            <li><a href="#seguir_jugador">Seguir jugador.</a></li>
+            <li><a href="#spawner_ciervo">Spawner ciervo.</a></li>
+        </ul>
+
+        <h2>Deer Feeding Simulator 2024: scripts</h2>
+        
+        <h3 id="controlar-jugador">Controlar jugador:</h3>
+        <p>Antes de siquiera pensar en qué hacer, este fue el primer script que hice, usando de guía el tutorial que puso el profesor, básicamente copiando paso por paso lo que hizo él. No fue difícil porque es un copia y pega, aunque lo modifiqué un poco para que fuera posible mirar hacia arriba y hacia abajo.</p>
+        <span class="hideText">
+            
+            <pre><code>
+
+                using System.Collections;
+                using System.Collections.Generic;
+                using UnityEngine;
+                
+                public class ThirdPersonController : MonoBehaviour
+                {
+                
+                    public float velocidadCaminar = 5f; // Velocidad de caminar
+                    public float velocidadCorrer = 10f; // Velocidad de correr
+                    public float alturaSalto = 3f;      // Altura del salto
+                    public float gravedad = 9.81f;      // Gravedad que afecta al jugador
+                    public float sensibilidadMouse = 2f; // Sensibilidad del mouse para rotar la cámara
+                
+                    private CharacterController characterController;
+                    private bool estaEnElSuelo;          // Variable para verificar si el jugador está en el suelo
+                    private float rotacionX = 0f;       // Variable para rastrear la rotación en el eje X
+                      private float rotacionY = 0f;
+                    private Vector3 velocidad;           // Variable para rastrear la velocidad de movimiento
+                
+                
+                    private void Start()
+                
+                        {
+                
+                            characterController = GetComponent<CharacterController>();
+                            // Bloquear y ocultar el cursor del mouse al iniciar
+                            Cursor.lockState = CursorLockMode.Locked;
+                
+                        }
+                
+                
+                    void Update()
+                    
+                        {
+                            ManejarMovimiento();
+                
+                            // Verificar si el jugador está en el suelo
+                            estaEnElSuelo = characterController.isGrounded;
+                
+                            // Saltar cuando el jugador presiona la tecla de salto, que en este caso es la barra espaciadora, y está en el suelo
+                            
+                            if (Input.GetButtonDown("Jump"))
+                            
+                            {
+                                Saltar();
+                            
+                            }
+                
+                            // Rotar la cámara con el movimiento del mouse
+                            RotarConMouse();
+                        
+                        }
+                
+                        private void ManejarMovimiento()
+                        
+                            {
+                            
+                                // Obtener la entrada del teclado para el movimiento del jugador
+                                
+                                float horizontal = Input.GetAxis("Horizontal");
+                                float vertical = Input.GetAxis("Vertical");
+                
+                                // Determinar la velocidad actual (caminando o corriendo)
+                                
+                                float currentSpeed = Input.GetKey(KeyCode.LeftShift) ? velocidadCorrer : velocidadCaminar;
+                
+                                // Calcular el vector de movimiento basado en la entrada del teclado y la velocidad actual
+                                
+                                Vector3 movimiento = new Vector3(horizontal, 0f, vertical);
+                                
+                                // Aplicar rotación al vector de movimiento
+                
+                                movimiento = Quaternion.Euler(0, rotacionX, 0) * movimiento; 
+                                movimiento = movimiento.normalized * currentSpeed * Time.deltaTime;
+                
+                                // Aplicar gravedad al jugador incluso cuando está en el suelo
+                                
+                                if (!estaEnElSuelo)
+                                    {
+                                        velocidad.y -= gravedad * Time.deltaTime;
+                                    }
+                
+                                // Agregar la componente vertical al movimiento
+                                
+                                movimiento.y = velocidad.y * Time.deltaTime;
+                
+                                // Mover al jugador utilizando el CharacterController
+                               
+                                characterController.Move(movimiento);
+                                
+                            }
+                
+                        private void RotarConMouse()
+                        {
+                            // Obtener la entrada del mouse para la rotación horizontal de la cámara
+                            
+                            float mouseX = Input.GetAxis("Mouse X") * sensibilidadMouse;
+                            float mouseY = Input.GetAxis("Mouse Y") * sensibilidadMouse;
+                
+                
+                            // Aplicar la rotación horizontal a la cámara
+                            rotacionY -= mouseY;
+                            rotacionX += mouseX;
+                            rotacionY = Mathf.Clamp(rotacionY, -30f, 60f);
+                            
+                            // Rotar el objeto del jugador (no la cámara) en la dirección de la cámara
+                            transform.rotation = Quaternion.Euler(rotacionY, rotacionX, 0f);
+                          
+                        }
+                
+                        private void Saltar()
+                        {
+                            // Verificar si el jugador está en el suelo antes de saltar
+                            
+                            
+                            if (estaEnElSuelo)
+                            
+                            {
+                                // Calcular la velocidad vertical para lograr el salto
+                                
+                                float velocidadSalto = Mathf.Sqrt(2f * alturaSalto * gravedad);
+                                
+                                // Aplicar la velocidad vertical al jugador
+                                
+                                velocidad.y = velocidadSalto;
+                                
+                                
+                            }
+                            
+                        }
+                        
+                }
+
+
+
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+        <h3 id="objeto-interactivo">Objeto interactivo:</h3>
+        <p>Lo segundo que hice en el proyecto fue crear una carpeta llamada "select-deselect", donde pondría todos los scripts relacionados con la selección de algún objeto. Este fue el primer script que hice, aunque al mismo tiempo estaba trabajando en los scripts de "selected" e "inventory" para que pudieran llamarse entre sí. Este script se encarga de que las galletas sean seleccionables y puedan recogerse, añadiendo un ítem al inventario según el tipo de galleta.</p>
+        <span class="hideText">
+            <pre><code>
+
+                using System.Collections;
+                using System.Collections.Generic;
+                using UnityEngine;
+                
+                public class ObjetoInteractivo : MonoBehaviour
+                { 
+                    public GameObject GalletaOnPlayer;
+                    public Galleta tipoDeGalleta;  // Tipo de galleta representado por un ScriptableObject
+                    public int cantidad = 1;
+                    private Inventory inventario;
+                    private Rigidbody rb;
+                    public float fuerzaDeEmpuje = 5f;
+                
+                    void Start()
+                    {
+                        inventario = FindObjectOfType<Inventory>();
+                        rb = GetComponent<Rigidbody>();
+                
+                        if (rb == null)
+                        {
+                            Debug.LogError("No hay un Rigidbody en el objeto de la galleta. Añade un Rigidbody desde el Inspector.");
+                        }
+                
+                        if (GalletaOnPlayer != null)
+                        {
+                            GalletaOnPlayer.SetActive(false);
+                            Debug.Log("Galleta en la mano desactivada al inicio.");
+                        }
+                        else
+                        {
+                            Debug.LogError("GalletaOnPlayer no asignada en el Inspector.");
+                        }
+                    }
+                
+                    public void ActivarObjeto()
+                {
+                    // Destruir el objeto en el suelo
+                    Destroy(gameObject);
+                
+                    // Añadir el objeto al inventario
+                    if (inventario != null && tipoDeGalleta != null)
+                    {
+                        inventario.AddItem(tipoDeGalleta.nombreGalleta, cantidad);
+                
+                        // Seleccionar el objeto recogido en el inventario
+                        if (tipoDeGalleta.nombreGalleta == "Galleta normal")
+                        {
+                            inventario.SeleccionarGalleta(inventario.galletaNormalPrefab, inventario.GetCantidadDeGalletas());
+                        }
+                        else if (tipoDeGalleta.nombreGalleta == "Manzana")
+                        {
+                            inventario.SeleccionarGalleta(inventario.galletaManzanaPrefab, inventario.GetCantidadDeManzanas());
+                        }
+                    }
+                }
+                
+                    
+                }
+                
+
+
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+        <h3 id="select-deselect">Select-Deselect:</h3>
+        <p>Este script se encarga de crear un raycast que colisiona con el objeto seleccionable, creando una máscara sobre él. También interactúa con otro script llamado "maquina", que es una máquina expendedora que, al interactuar con ella, muestra dos opciones: el "opciones canvas" que se puede ver en el script y los ciervos que se quieren alimentar.</p>
+        <span class="hideText">
+            <pre><code>
+
+                using System.Collections;
+                using UnityEngine;
+                using UnityEngine.UI;
+                
+                public class Selected : MonoBehaviour
+                {
+                    LayerMask mask;
+                    public float distancia = 2f;
+                    public Texture2D puntero;
+                    public GameObject TextDetect;
+                    public GameObject TextCiervo;
+                    public GameObject TextMaquina;
+                    GameObject ultimoReconocido = null;
+                    public Canvas opcionesCanvas;
+                    bool opcionesCanvasVisible = false;
+                    RaycastHit hit;
+                
+                    void Start()
+                    {
+                        mask = LayerMask.GetMask("Raycast Detect");
+                
+                        if (TextDetect != null)
+                            TextDetect.SetActive(false);
+                        if (TextCiervo != null)
+                            TextCiervo.SetActive(false);
+                        if (TextMaquina != null)
+                            TextMaquina.SetActive(false);
+                
+                        if (opcionesCanvas != null)
+                            opcionesCanvas.enabled = false;
+                    }
+                
+                    void Update()
+                    {
+                        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, distancia, mask))
+                        {
+                            Deselect();
+                            SelectedObject(hit.transform);
+                
+                            // Detectar ciervo y alimentar al hacer clic
+                            if (hit.collider.CompareTag("Ciervo"))
+                            {
+                                TextCiervo.SetActive(true);
+                
+                                if (Input.GetKeyDown(KeyCode.Mouse0))
+                                {
+                                    AlimentarCiervo alimentarCiervo = hit.collider.GetComponent<AlimentarCiervo>();
+                                    if (alimentarCiervo != null)
+                                    {
+                                        alimentarCiervo.AlimentarAlCiervo();
+                                    }
+                                }
+                            }
+                            // Detectar la máquina para alternar el Canvas de opciones
+                            else if (hit.collider.CompareTag("Maquina"))
+                            {
+                                TextMaquina.SetActive(true);
+                
+                                if (Input.GetKeyDown(KeyCode.E))
+                                {
+                                    opcionesCanvasVisible = !opcionesCanvasVisible;
+                                    opcionesCanvas.enabled = opcionesCanvasVisible;
+                                }
+                            }
+                            else if (hit.collider.CompareTag("BotonGalleta"))
+                            {
+                                Button boton = hit.collider.GetComponent<Button();
+                                if (boton != null && Input.GetKeyDown(KeyCode.Mouse0))
+                                {
+                                    boton.onClick.Invoke();
+                                }
+                            }
+                            else if (hit.collider.CompareTag("Objeto Interactivo"))
+                            {
+                                if (Input.GetKeyDown(KeyCode.E))
+                                {
+                                    hit.collider.transform.GetComponent<ObjetoInteractivo>().ActivarObjeto();
+                                }
+                            }
+                
+                            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * distancia, Color.red);
+                        }
+                        else
+                        {
+                            Deselect();
+                        }
+                    }
+                
+                    void SelectedObject(Transform transform)
+                    {
+                        if (transform == null)
+                        {
+                            Debug.LogError("Objeto nulo detectado en SelectedObject");
+                            return;
+                        }
+                
+                        MeshRenderer renderer = transform.GetComponent<MeshRenderer>();
+                        if (renderer != null)
+                        {
+                            renderer.material.color = Color.green;
+                            ultimoReconocido = transform.gameObject;
+                        }
+                        else
+                        {
+                            Debug.LogError("El objeto " + transform.name + " no tiene un MeshRenderer.");
+                        }
+                    }
+                
+                    void Deselect()
+                    {
+                        if (ultimoReconocido)
+                        {
+                            MeshRenderer renderer = ultimoReconocido.GetComponent<MeshRenderer>();
+                            if (renderer != null)
+                            {
+                                renderer.material.color = Color.white;
+                            }
+                            ultimoReconocido = null;
+                        }
+                    }
+                
+                    void OnGUI()
+                    {
+                        Rect rect = new Rect(Screen.width / 2, Screen.height / 2, puntero.width, puntero.height);
+                        GUI.DrawTexture(rect, puntero);
+                
+                        if (TextDetect != null)
+                        {
+                            TextDetect.SetActive(ultimoReconocido != null);
+                        }
+                        else
+                        {
+                            Debug.LogError("TextDetect no está asignado.");
+                        }
+                
+                        if (hit.collider != null && hit.collider.CompareTag("Ciervo"))
+                        {
+                            TextCiervo.SetActive(ultimoReconocido != null);
+                            TextDetect.SetActive(false);
+                        }
+                        else
+                        {
+                            TextCiervo.SetActive(false);
+                        }
+                
+                        if (hit.collider != null && hit.collider.CompareTag("Maquina"))
+                        {
+                            TextMaquina.SetActive(ultimoReconocido != null);
+                            TextCiervo.SetActive(false);
+                            TextDetect.SetActive(false);
+                        }
+                        else
+                        {
+                            TextMaquina.SetActive(false);
+                        }
+                    }
+                }
+                
+
+
+
+
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+        <h3 id="pick-up-object">Pick up object:</h3>
+        <p>Este script se encarga de que el objeto desaparezca al ser seleccionado con la tecla "E" y funciona junto a los scripts anteriores.</p>
+        <span class="hideText">
+            <pre><code>
+
+                using System.Collections;
+                using System.Collections.Generic;
+                using UnityEngine;
+                
+                public class PickUpObject : MonoBehaviour
+                {
+                    public GameObject GalletaOnPlayer; // Referencia al objeto que aparecerá en el jugador
+                
+                    void Start()
+                    {
+                        if (GalletaOnPlayer != null)
+                        {
+                            GalletaOnPlayer.SetActive(false); // La galleta en la mano está desactivada al inicio
+                            Debug.Log("Galleta en la mano desactivada al inicio.");
+                        }
+                        else
+                        {
+                            Debug.LogError("GalletaOnPlayer no asignada en el Inspector.");
+                        }
+                    }
+                
+                    // Detectar cuando el jugador está dentro del área de colisión
+                    private void OnTriggerStay(Collider other)
+                    {
+                        Debug.Log("OnTriggerStay activado.");
+                
+                        // Verificar si el objeto que ha colisionado tiene la etiqueta de "Player"
+                        if (other.gameObject.CompareTag("Player"))
+                        {
+                            Debug.Log("Jugador detectado en la zona de colisión.");
+                
+                            // Si el jugador presiona la tecla E
+                            if (Input.GetKey(KeyCode.E))
+                            {
+                                Debug.Log("Tecla E presionada.");
+                
+                                // Desactivar el objeto actual (galleta en el suelo)
+                                gameObject.SetActive(false);
+                                Debug.Log("Galleta recogida y desactivada.");
+                
+                                // Activar la galleta en la mano del jugador
+                                if (GalletaOnPlayer != null)
+                                {
+                                    GalletaOnPlayer.SetActive(true);
+                                    Debug.Log("Galleta en la mano activada.");
+                                }
+                                else
+                                {
+                                    Debug.LogError("GalletaOnPlayer no está asignada en el Inspector.");
+                                }
+                            }
+                        }
+                    }
+                
+                    // Método llamado desde el raycast para recoger/destruir el objeto
+                    public void ActivarObjeto()
+                    {
+                        // Activar la galleta en la mano del jugador
+                        
+                
+                        // Destruir la galleta en el suelo
+                        Destroy(gameObject);
+                        Debug.Log("Galleta en el suelo destruida.");
+                    }
+                }
+                
+
+
+
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+
+        <h3 id="inventory">Inventory:</h3>
+        <p>Este es el inventario; se encarga de manejar absolutamente todo lo relacionado con él. Lleva un conteo de cuántas galletas se gastan, cuántas se tienen, de qué tipo, etc. Es el script más largo, ya que incluye la selección del tipo de galleta al presionar el botón "1" o "2". Asimismo, gestiona la visibilidad del tipo de galleta en la mano del jugador. Aun así, es relativamente sencillo. </p>
+        <span class="hideText">
+            <pre><code>
+                using System.Collections;
+                using System.Collections.Generic;
+                using UnityEngine;
+                using UnityEngine.UI;
+                
+                public class InventoryItem
+                {
+                    public string nombre;
+                    public int cantidad;
+                
+                    public InventoryItem(string nombre, int cantidad)
+                    {
+                        this.nombre = nombre;
+                        this.cantidad = cantidad;
+                    }
+                }
+                
+                public class Inventory : MonoBehaviour
+                {
+                    public InventoryItem[] items;
+                    public int capacidadMaxima = 10;
+                    public Text textoGalletas;
+                    public Text textoManzanas; 
+                    public GameObject GalletaOnPlayer;
+                    public GameObject manzanaOnPlayer;
+                    public GameObject galletaNormalPrefab;
+                    public GameObject galletaManzanaPrefab;
+                    public Transform puntoDeLanzamiento;
+                    public float fuerzaDeLanzamiento;
+                
+                    private int galletasRecogidas = 0;
+                    private int manzanasRecogidas = 0;
+                    private GameObject galletaSeleccionada;
+                
+                    private void Start()
+                    {
+                        items = new InventoryItem[capacidadMaxima];
+                       SeleccionarGalleta(galletaNormalPrefab, galletasRecogidas);
+                
+                        if (textoGalletas == null || textoManzanas == null)
+                        {
+                            Debug.LogError("Error: Asigna los objetos Text en el inspector.");
+                        }
+                
+                        if (GalletaOnPlayer != null)
+                        {
+                            GalletaOnPlayer.SetActive(false);
+                        }
+                
+                        if (manzanaOnPlayer != null)
+                        {
+                            manzanaOnPlayer.SetActive(false);
+                        }
+                
+                        galletaSeleccionada = galletaNormalPrefab;
+                        ActualizarTextoGalletas();  // Para ver si el texto de inicio se muestra
+                        ActualizarTextoManzanas();
+                    }
+                
+                   private void Update()
+                {
+                    // Cambiar slot al presionar 1
+                    if (Input.GetKeyDown(KeyCode.Alpha1) && HasItem("Galleta normal"))
+                    {
+                        SeleccionarGalleta(galletaNormalPrefab, galletasRecogidas);
+                        Debug.Log("Seleccionada galleta normal. Cantidad: " + galletasRecogidas);
+                    }
+                    // Cambiar slot al presionar 2
+                    else if (Input.GetKeyDown(KeyCode.Alpha2) && HasItem("Manzana"))
+                    {
+                        SeleccionarGalleta(galletaManzanaPrefab, manzanasRecogidas);
+                        Debug.Log("Seleccionada galleta de manzana. Cantidad: " + manzanasRecogidas);
+                    }
+                
+                    // Lanzar galleta seleccionada al presionar Q
+                    if (Input.GetKeyDown(KeyCode.Q) && galletaSeleccionada != null)
+                    {
+                        string tipoGalleta = galletaSeleccionada == galletaNormalPrefab ? "Galleta normal" : "Manzana";
+                        int cantidadActual = tipoGalleta == "Galleta normal" ? galletasRecogidas : manzanasRecogidas;
+                
+                        if (cantidadActual > 0)
+                        {
+                            Debug.Log("Lanzando: " + tipoGalleta);
+                            LanzaGalleta();
+                            RemoveItem(tipoGalleta, 1);
+                        }
+                        else
+                        {
+                            Debug.Log("No hay suficientes " + tipoGalleta + " para lanzar.");
+                        }
+                    }
+                }
+                
+                   public void recogerGalleta()
+                {
+                    AddItem("Galleta normal", 1);
+                    if (galletaSeleccionada == galletaNormalPrefab)
+                    {
+                        MostrarObjetoEnMano(GalletaOnPlayer);
+                    }
+                    else
+                    {
+                        GalletaOnPlayer.SetActive(false);  // Asegura que solo se vea la galleta seleccionada
+                    }
+                }
+                
+                public void recogerManzana()
+                {
+                    AddItem("Manzana", 1);
+                    if (galletaSeleccionada == galletaManzanaPrefab)
+                    {
+                        MostrarObjetoEnMano(manzanaOnPlayer);
+                    }
+                    else
+                    {
+                        manzanaOnPlayer.SetActive(false);  // Asegura que solo se vea la manzana seleccionada
+                    }
+                }
+                
+                
+                    private void LanzaGalleta()
+                    {
+                        GameObject galletaClon = Instantiate(galletaSeleccionada, puntoDeLanzamiento.position, puntoDeLanzamiento.rotation);
+                        Rigidbody rb = galletaClon.GetComponent<Rigidbody>();
+                
+                        if (rb != null)
+                        {
+                            rb.AddForce(puntoDeLanzamiento.forward * fuerzaDeLanzamiento, ForceMode.Impulse);
+                        }
+                
+                        GalletaOnPlayer.SetActive(false);
+                        manzanaOnPlayer.SetActive(false); // Oculta ambos objetos al lanzar
+                    }
+                
+                   public void SeleccionarGalleta(GameObject galletaPrefab, int cantidad)
+                {
+                    galletaSeleccionada = galletaPrefab;
+                
+                    // Escondemos ambos objetos antes de mostrar el que corresponde
+                    GalletaOnPlayer.SetActive(false);
+                    manzanaOnPlayer.SetActive(false);
+                
+                    // Mostrar el objeto en mano correspondiente según la selección
+                    if (galletaSeleccionada == galletaNormalPrefab)
+                    {
+                        GalletaOnPlayer.SetActive(cantidad > 0);
+                    }
+                    else if (galletaSeleccionada == galletaManzanaPrefab)
+                    {
+                        manzanaOnPlayer.SetActive(cantidad > 0);
+                    }
+                }
+                
+                
+                    private void MostrarObjetoEnMano(GameObject objeto)
+                    {
+                        if (objeto != null)
+                        {
+                            GalletaOnPlayer.SetActive(false);
+                            manzanaOnPlayer.SetActive(false);
+                            objeto.SetActive(true);
+                        }
+                    }
+                
+                    private void ActualizarTextoGalletas()
+                    {
+                        if (textoGalletas != null)
+                        {
+                            textoGalletas.text = "Galletas: " + galletasRecogidas;
+                            Debug.Log("Texto de galletas actualizado a: " + galletasRecogidas);
+                        }
+                    }
+                
+                    private void ActualizarTextoManzanas()
+                    {
+                        if (textoManzanas != null)
+                        {
+                            textoManzanas.text = "Manzanas: " + manzanasRecogidas;
+                            Debug.Log("Texto de manzanas actualizado a: " + manzanasRecogidas);
+                        }
+                    }
+                
+                    public void AddItem(string nombre, int cantidad)
+                    {
+                        Debug.Log("Añadiendo item: " + nombre + ", cantidad: " + cantidad);
+                        for (int i = 0; i < items.Length; i++)
+                        {
+                            if (items[i] != null && items[i].nombre == nombre)
+                            {
+                                items[i].cantidad += cantidad;
+                                if (nombre == "Galleta normal")
+                                {
+                                    galletasRecogidas += cantidad;
+                                    ActualizarTextoGalletas();
+                                }
+                                else if (nombre == "Manzana")
+                                {
+                                    manzanasRecogidas += cantidad;
+                                    ActualizarTextoManzanas();
+                                }
+                                return;
+                            }
+                            else if (items[i] == null)
+                            {
+                                items[i] = new InventoryItem(nombre, cantidad);
+                                if (nombre == "Galleta normal")
+                                {
+                                    galletasRecogidas += cantidad;
+                                    ActualizarTextoGalletas();
+                                }
+                                else if (nombre == "Manzana")
+                                {
+                                    manzanasRecogidas += cantidad;
+                                    ActualizarTextoManzanas();
+                                }
+                                return;
+                            }
+                        }
+                    }
+                
+                   public void RemoveItem(string nombre, int cantidad)
+                {
+                    for (int i = 0; i < items.Length; i++)
+                    {
+                        if (items[i] != null && items[i].nombre == nombre)
+                        {
+                            items[i].cantidad -= cantidad;
+                
+                            if (nombre == "Galleta normal")
+                            {
+                                galletasRecogidas -= cantidad;
+                                if (galletasRecogidas < 0) galletasRecogidas = 0;
+                                ActualizarTextoGalletas();
+                                if (galletasRecogidas == 0)
+                                {
+                                    GalletaOnPlayer.SetActive(false); // Ocultar la galleta si la cantidad es 0
+                                }
+                            }
+                            else if (nombre == "Manzana")
+                            {
+                                manzanasRecogidas -= cantidad;
+                                if (manzanasRecogidas < 0) manzanasRecogidas = 0;
+                                ActualizarTextoManzanas();
+                                if (manzanasRecogidas == 0)
+                                {
+                                    manzanaOnPlayer.SetActive(false); // Ocultar la manzana si la cantidad es 0
+                                }
+                            }
+                
+                            if (items[i].cantidad <= 0)
+                            {
+                                items[i] = null;
+                            }
+                            return;
+                        }
+                    }
+                }
+                
+                   public bool HasItem(string nombre)
+                {
+                    foreach (InventoryItem item in items)
+                    {
+                        if (item != null && item.nombre == nombre && item.cantidad > 0)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                
+                    public int GetCantidadDeGalletas()
+                    {
+                        foreach (InventoryItem item in items)
+                        {
+                            if (item != null && item.nombre == "Galleta normal")
+                            {
+                                return item.cantidad;
+                            }
+                        }
+                        return 0;
+                    }
+                
+                    public int GetCantidadDeManzanas()
+                {
+                    foreach (InventoryItem item in items)
+                    {
+                        if (item != null && item.nombre == "Manzana")
+                        {
+                            return item.cantidad;
+                        }
+                    }
+                    return 0;
+                }
+                
+                }
+                
+
+
+                
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+
+        <h3 id="maquina">Maquina:</h3>
+        <p>Esta es la máquina expendedora. Su funcionamiento es sencillo: al interactuar con ella, si se tienen los puntos necesarios, se pueden comprar dos tipos de galletas, de manzana o normales. </p>
+        <span class="hideText">
+            <pre><code>
+                using System.Collections;
+                using System.Collections.Generic;
+                using UnityEngine;
+                
+                public class Maquina : MonoBehaviour
+                {
+                    public Transform puntoDeAparicion;
+                    public GameObject galletaNormalPrefab;
+                    public GameObject galletaManzanaPrefab;
+                    public float fuerzaDeAparicion;
+                
+                    private SistemaPuntos sistemaPuntos;
+                
+                    void Start()
+                    {
+                        sistemaPuntos = FindObjectOfType<SistemaPuntos>();
+                
+                        if (sistemaPuntos == null)
+                        {
+                            Debug.LogError("No se encontró el sistema de puntos en Maquina.");
+                        }
+                    }
+                
+                    public void ActivarMaquina(string tipoGalleta)
+                {
+                    int costo = tipoGalleta == "manzana" ? 20 : 10;
+                
+                    if (sistemaPuntos != null && sistemaPuntos.puntos >= costo)
+                    {
+                        GameObject galletaClon;
+                
+                        // Selecciona el prefab de galleta según el tipo
+                        if (tipoGalleta == "manzana")
+                        {
+                            galletaClon = Instantiate(galletaManzanaPrefab, puntoDeAparicion.position, puntoDeAparicion.rotation);
+                        }
+                        else
+                        {
+                            galletaClon = Instantiate(galletaNormalPrefab, puntoDeAparicion.position, puntoDeAparicion.rotation);
+                        }
+                
+                        // Aplica la fuerza de aparición
+                        Rigidbody rb = galletaClon.GetComponent<Rigidbody>();
+                        if (rb != null)
+                        {
+                            sistemaPuntos.RestarPuntos(costo);
+                            rb.AddForce(puntoDeAparicion.forward * fuerzaDeAparicion, ForceMode.Impulse);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("No tienes suficientes puntos para activar la máquina.");
+                    }
+                    }
+                }
+                
+
+
+
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+        <h3 id="maquinaUI">MaquinaUI:</h3>
+        <p>Este script solamente se encarga de la UI de los botones de la maquina expendedora. </p>
+        <span class="hideText">
+            <pre><code>
+                using UnityEngine;
+                using UnityEngine.UI;
+                
+                public class MaquinaUI : MonoBehaviour
+                {
+                    public Maquina maquina; 
+                    public Button botonGalletaNormal;
+                    public Button botonGalletaManzana;
+                
+                    void Start()
+                    {
+                        
+                        if (maquina == null)
+                        {
+                            Debug.LogError("No se ha asignado la referencia a Maquina.");
+                            return;
+                        }
+                
+                      
+                        botonGalletaNormal.onClick.AddListener(() => maquina.ActivarMaquina("normal"));
+                        botonGalletaManzana.onClick.AddListener(() => maquina.ActivarMaquina("manzana"));
+                    }
+                }
+                
+
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+        <h3 id="galleta">Galleta:</h3>
+        <p>Este se encarga de manejar los tipos de galleta.</p>
+        <span class="hideText">
+            <pre><code>
+
+                using UnityEngine;
+using UnityEngine.UI;
+
+public class MaquinaUI : MonoBehaviour
+{
+    public Maquina maquina; 
+    public Button botonGalletaNormal;
+    public Button botonGalletaManzana;
+
+    void Start()
+    {
+        
+        if (maquina == null)
+        {
+            Debug.LogError("No se ha asignado la referencia a Maquina.");
+            return;
+        }
+
+      
+        botonGalletaNormal.onClick.AddListener(() => maquina.ActivarMaquina("normal"));
+        botonGalletaManzana.onClick.AddListener(() => maquina.ActivarMaquina("manzana"));
+    }
+}
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+        <h3 id="alimentar_Ciervo">Alimentar ciervo:</h3>
+        <p>Este es el que se encarga de alimentar al ciervo y también de asignar las preferencias de galletas. Además, al alimentar a un ciervo, se obtienen puntos. </p>
+        <span class="hideText">
+            <pre><code>
+
+                using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AlimentarCiervo : MonoBehaviour
+{
+    private Inventory inventory;
+    public int puntosPorCiervo = 20;
+    private bool haSidoAlimentado = false; // Variable para controlar si el ciervo ya fue alimentado
+    public float tiempoParaDesaparecer = 3f;
+    public SpawnerCiervos spawner; // Referencia al spawner
+
+    void Start()
+    {
+        // Busca el inventario al inicio del juego
+        inventory = FindObjectOfType<Inventory>();
+        if (inventory == null)
+        {
+            Debug.LogError("No se encontró el inventario en AlimentarCiervo");
+        }
+    }
+
+    public void AlimentarAlCiervo()
+    {
+        // Verifica si el ciervo ya ha sido alimentado
+        if (haSidoAlimentado)
+        {
+            Debug.Log("Este ciervo ya ha sido alimentado.");
+            return; // Salir de la función si ya fue alimentado
+        }
+
+        // Verifica si el jugador tiene al menos una galleta
+        if (inventory != null && inventory.GetGalletasRecogidas() > 0)
+        {
+            // Elimina una galleta del inventario
+            inventory.RemoveItem("Galleta", 1);
+            Debug.Log("Has alimentado al ciervo");
+
+            // Añadir puntos
+            SistemaPuntos sistemaPuntos = FindObjectOfType<SistemaPuntos>();
+            if (sistemaPuntos != null)
+            {
+                sistemaPuntos.AñadirPuntos(puntosPorCiervo);
+            }
+
+            // Marcar el ciervo como alimentado
+            haSidoAlimentado = true;
+
+            // Notificar al spawner que el ciervo ha sido eliminado
+            if (spawner != null)
+            {
+                spawner.CiervoEliminado();
+            }
+
+            // Iniciar la rutina para desaparecer el ciervo
+            StartCoroutine(Desaparecer());
+        }
+        else
+        {
+            Debug.Log("No tienes galletas suficientes para alimentar al ciervo");
+        }
+    }
+
+    IEnumerator Desaparecer()
+    {
+        // Espera antes de destruir el objeto
+        yield return new WaitForSeconds(tiempoParaDesaparecer);
+        Destroy(gameObject); // Destruir el ciervo después del tiempo de espera
+    }
+}
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+
+        <h3 id="puntos">Puntos:</h3>
+        <p>Este es el que se encarga del conteo de puntos, al llegar a cierta cantidad, el juego termina. </p>
+        <span class="hideText">
+            <pre><code>
+
+                using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class SistemaPuntos : MonoBehaviour
+{
+    public int puntos = 0; 
+    public int puntosNecesarios = 200;
+    public Text puntosText; 
+
+    // Método para aumentar los puntos
+    public void AñadirPuntos(int cantidad)
+    {
+        puntos += cantidad;
+        ActualizarTextoPuntos();
+    }
+
+    // Método para restar puntos
+    public void RestarPuntos(int cantidad)
+    {
+        puntos -= cantidad;
+        if (puntos < 0) puntos = 0; // Asegurarse de que los puntos no sean negativos
+        ActualizarTextoPuntos();
+    }
+
+    // Actualizar el texto en la UI
+    private void ActualizarTextoPuntos()
+    {
+        if (puntosText != null)
+        {
+            puntosText.text = "Puntos: " + puntos.ToString();
+        }
+        else
+        {
+            Debug.LogError("No se ha asignado el Text de los puntos.");
+        }
+
+        if (puntos >= puntosNecesarios)
+        {
+            CambiarEscena();
+        }
+    }
+    private void CambiarEscena()
+    {
+        string nombreDeLaEscena = "Plano";
+
+        SceneManager.LoadScene(nombreDeLaEscena);
+    }
+    
+
+}
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+
+        <h3 id="seguir_Galleta">Seguir galleta:</h3>
+        <p>Este se encarga de hacer que, al momento de tirar una galleta al suelo, el ciervo camine en su dirección para comerla. Se suponía que pondría ciervos agresivos, teniendo que lanzar la galleta para evitar ser dañado, pero al final no lo hice. </p>
+        <span class="hideText">
+            <pre><code>
+                using System.Collections;
+                using System.Collections.Generic;
+                using UnityEngine;
+                using UnityEngine.AI; // Usar si usas NavMesh
+                
+                public class DeerBehavior : MonoBehaviour
+                {
+                    public float rangoDeDeteccion = 5f; // Rango dentro del cual el ciervo detecta la galleta
+                    public float distanciaMinimaParaComer = 1.5f; // Distancia mínima para que el ciervo "coma"
+                    public float tiempoParaComer = 3f; // Tiempo que el ciervo tardará en comer la galleta
+                    private GameObject galletaObjetivo; // Galleta que el ciervo va a seguir
+                    private NavMeshAgent agente; // Para mover al ciervo si usas NavMesh
+                
+                    void Start()
+                    {
+                        agente = GetComponent<NavMeshAgent>();
+                    }
+                
+                    void Update()
+                    {
+                        DetectarGalletaCercana();
+                        
+                        if (galletaObjetivo != null)
+                        {
+                            SeguirGalleta();
+                        }
+                    }
+                
+                    void DetectarGalletaCercana()
+                    {
+                        // Busca todas las galletas cercanas dentro del rango de detección
+                        Collider[] objetosCercanos = Physics.OverlapSphere(transform.position, rangoDeDeteccion);
+                
+                        foreach (Collider objeto in objetosCercanos)
+                        {
+                            if (objeto.CompareTag("Objeto Interactivo")) 
+                            {
+                                galletaObjetivo = objeto.gameObject;
+                                break;
+                            }
+                        }
+                    }
+                
+                    void SeguirGalleta()
+                    {
+                        // Mover el ciervo hacia la galleta
+                        agente.SetDestination(galletaObjetivo.transform.position);
+                
+                        // Si el ciervo está lo suficientemente cerca de la galleta, empieza a comerla
+                        float distancia = Vector3.Distance(transform.position, galletaObjetivo.transform.position);
+                
+                        if (distancia <= distanciaMinimaParaComer)
+                        {
+                            StartCoroutine(ComerGalleta());
+                        }
+                    }
+                
+                    IEnumerator ComerGalleta()
+                    {
+                        // Detener el ciervo mientras "come"
+                        agente.isStopped = true;
+                
+                        // Esperar el tiempo designado para "comer" la galleta
+                        yield return new WaitForSeconds(tiempoParaComer);
+                
+                        // Destruir la galleta
+                        if (galletaObjetivo != null)
+                        {
+                            Destroy(galletaObjetivo);
+                        }
+                
+                        // El ciervo puede seguir moviéndose después de comer
+                        agente.isStopped = false;
+                
+                        // Limpiar el objetivo de la galleta
+                        galletaObjetivo = null;
+                    }
+                
+                    private void OnDrawGizmosSelected()
+                    {
+                        // Mostrar el rango de detección en el editor
+                        Gizmos.color = Color.yellow;
+                        Gizmos.DrawWireSphere(transform.position, rangoDeDeteccion);
+                    }
+                }
+                
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+
+        <h3 id="seguir_jugador">Seguir jugador:</h3>
+        <p>Este se encarga de que, cuando el jugador tiene una galleta en la mano, el ciervo lo empiece a seguir. Es para evitar que el ciervo se escape y sea más fácil de alimenta </p>
+        <span class="hideText">
+            <pre><code>
+                using System.Collections;
+                using System.Collections.Generic;
+                using UnityEngine;
+                using UnityEngine.AI;
+                
+                public class SeguirJugador : MonoBehaviour
+                {
+                    public Transform jugador;
+                    public float distanciaMinimaParaSeguir = 5f; // Distancia para empezar a seguir
+                    public float distanciaEscape = 3f; // Distancia para escapar
+                    public float velocidad = 3f; // Velocidad de movimiento
+                    public float velocidadEscape = 5f; // Velocidad de escape
+                    public float distanciaDeseada = 1f; // Distancia deseada para mantenerse del jugador
+                    public float radioDeDeambular = 10f; // Radio para deambular libremente
+                    public float tiempoDeEsperaDeambular = 3f; // Tiempo entre cada deambulación
+                    private NavMeshAgent agente;
+                    private Inventory inventory; // Referencia al script de inventario
+                    private float tiempoUltimaDeambulacion; // Control del tiempo de la última deambulación
+                
+                    void Start()
+                    {
+                        agente = GetComponent<NavMeshAgent>();
+                        agente.stoppingDistance = distanciaDeseada; // Configurar distancia de parada
+                        inventory = FindObjectOfType<Inventory>(); // Asegúrate de que solo haya un inventario
+                
+                        if (inventory == null)
+                        {
+                            Debug.LogError("No se encontró el componente Inventory.");
+                        }
+                    }
+                
+                    void Update()
+                    {
+                        if (inventory == null) return; // Si no se encuentra el inventario, no hacemos nada
+                
+                        float distanciaAlJugador = Vector3.Distance(transform.position, jugador.position);
+                        bool tieneGalletas = inventory.GetCantidadDeGalletas() > 0;
+                 // Verificar si el jugador tiene galletas
+                
+                        if (tieneGalletas && distanciaAlJugador < distanciaMinimaParaSeguir)
+                        {
+                            // El ciervo sigue al jugador si tiene galletas y está dentro de la distancia mínima
+                            SeguirAlJugador();
+                        }
+                        else if (!tieneGalletas && distanciaAlJugador < distanciaEscape)
+                        {
+                            // El ciervo escapa si el jugador no tiene galletas y está muy cerca
+                            EscaparDelJugador();
+                        }
+                        else
+                        {
+                            // Si el jugador no está cerca, el ciervo deambula
+                            if (Time.time >= tiempoUltimaDeambulacion + tiempoDeEsperaDeambular)
+                            {
+                                Deambular();
+                            }
+                        }
+                    }
+                
+                    void SeguirAlJugador()
+                    {
+                        // Calcular la dirección hacia el jugador y mantener la distancia deseada
+                        Vector3 direccion = (jugador.position - transform.position).normalized;
+                        Vector3 nuevoDestino = jugador.position - direccion * distanciaDeseada;
+                
+                        // Asegúrate de que el nuevo destino esté dentro del NavMesh
+                        if (NavMesh.SamplePosition(nuevoDestino, out NavMeshHit hit, 1.0f, NavMesh.AllAreas))
+                        {
+                            agente.SetDestination(hit.position); // Asignar el nuevo destino
+                            agente.speed = velocidad;
+                        }
+                    }
+                
+                    void EscaparDelJugador()
+                    {
+                        // Escapar del jugador si no tiene galletas
+                        Vector3 direccionEscape = (transform.position - jugador.position).normalized;
+                        Vector3 posicionEscape = transform.position + direccionEscape * distanciaEscape;
+                
+                        // Asegúrate de que la posición de escape esté dentro del NavMesh
+                        if (NavMesh.SamplePosition(posicionEscape, out NavMeshHit hit, 1.0f, NavMesh.AllAreas))
+                        {
+                            agente.SetDestination(hit.position); // Asignar destino de escape
+                            agente.speed = velocidadEscape;
+                        }
+                    }
+                
+                    void Deambular()
+                    {
+                        // Genera un destino aleatorio dentro de un radio desde la posición actual
+                        Vector3 destinoAleatorio = RandomNavSphere(transform.position, radioDeDeambular, NavMesh.AllAreas);
+                
+                        // Asignar el destino al NavMeshAgent
+                        if (NavMesh.SamplePosition(destinoAleatorio, out NavMeshHit hit, 1.0f, NavMesh.AllAreas))
+                        {
+                            agente.SetDestination(hit.position); // Asignar el nuevo destino de deambulación
+                            agente.speed = velocidad; // Deambular a la velocidad normal
+                        }
+                
+                        // Actualiza el tiempo de la última deambulación
+                        tiempoUltimaDeambulacion = Time.time;
+                    }
+                
+                    // Función para generar una posición aleatoria en el NavMesh
+                    public static Vector3 RandomNavSphere(Vector3 origen, float distancia, int capaNavMesh)
+                    {
+                        Vector3 randomDirection = Random.insideUnitSphere * distancia;
+                        randomDirection += origen;
+                
+                        NavMesh.SamplePosition(randomDirection, out NavMeshHit navHit, distancia, capaNavMesh);
+                        return navHit.position;
+                    }
+                }
+                
+
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+        <h3 id="spawner_ciervo">Spawner ciervo:</h3>
+        <p>Este simplemente se encarga de generar un máximo de ciervos en la escena, dos de cada preferencia de galletas, además de mantener un conteo de cuántos ciervos hay en la escena para que, al eliminarse uno, aparezca otro. </p>
+        <span class="hideText">
+            <pre><code>
+
+                using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SpawnerCiervos : MonoBehaviour
+{
+    public GameObject ciervoPrefabNormal;
+    public GameObject ciervoPrefabManzana;
+    public int cantidadCiervosPorTipo = 2;
+
+    private int ciervosEliminados = 0;
+
+    void Start()
+    {
+        SpawnCiervos();
+    }
+
+    void SpawnCiervos()
+    {
+        // Genera la cantidad especificada de cada tipo de ciervo
+        for (int i = 0; i < cantidadCiervosPorTipo; i++)
+        {
+            GenerarCiervo(ciervoPrefabNormal);
+            GenerarCiervo(ciervoPrefabManzana);
+        }
+    }
+
+    public void GenerarCiervo(GameObject ciervoPrefab)
+    {
+        // Usa la posición del spawner como la posición de aparición
+        Vector3 spawnPos = transform.position;
+
+        // Instancia el prefab de ciervo proporcionado
+        GameObject ciervo = Instantiate(ciervoPrefab, spawnPos, Quaternion.identity);
+
+        // Configura el ciervo generado
+        AlimentarCiervo alimentarCiervo = ciervo.GetComponent<AlimentarCiervo>();
+        if (alimentarCiervo != null)
+        {
+            alimentarCiervo.spawner = this; // Asigna referencia al spawner
+        }
+    }
+
+    public void CiervoEliminado()
+    {
+        ciervosEliminados++;
+        Debug.Log("Ciervo eliminado. Total de ciervos eliminados: " + ciervosEliminados);
+
+        // Opcional: generar un nuevo ciervo al eliminar uno (alternando prefabs si se desea)
+        GenerarCiervo(ciervosEliminados % 2 == 0 ? ciervoPrefabNormal : ciervoPrefabManzana);
+    }
+}
+
+            </code></pre>
+        </span>
+        <button class="readMore_btn">Leer más</button>
+
+
+    </main>
+
+    
+
+    <footer>
+        <p>© Compumundo hiper mega red 2024 Rinku Kanji productions. Todos los derechos reservados.</p>
+    </footer>
+
+    <button id="back-to-top" style="display: none; position: fixed; bottom: 20px; right: 20px;">↑ Volver al inicio</button>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
