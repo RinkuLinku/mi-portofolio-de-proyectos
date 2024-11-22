@@ -79,7 +79,18 @@
 
     <button id="back-to-top" style="display: none; position: fixed; bottom: 20px; right: 20px;">↑ Volver al inicio</button>
     <script src="js/script.js"></script>
+  <script>const backToTopButton = document.getElementById('back-to-top');
 
+if (backToTopButton) {
+    window.addEventListener('scroll', () => {
+        backToTopButton.style.display = window.scrollY > 300 ? 'block' : 'none';
+    });
+
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+</script>
 </body>
     
 
