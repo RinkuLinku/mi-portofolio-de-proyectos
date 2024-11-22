@@ -1413,6 +1413,21 @@ if (backToTopButton) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
+
+      let readMoreButtons = document.querySelectorAll('.readMore_btn');
+
+readMoreButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        let hideText = button.previousElementSibling; 
+        hideText.classList.toggle('visible');
+        
+        if (hideText.classList.contains('visible')) {
+            button.innerHTML = 'Leer menos';
+        } else {
+            button.innerHTML = 'Leer más';
+        }
+    });
+});
 </script>  
 
 </body>
