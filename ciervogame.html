@@ -1403,21 +1403,6 @@ public class SpawnerCiervos : MonoBehaviour
                   
     <script src="js/script.js"></script>
   <script>
-      let readMoreButtons = document.querySelectorAll('.readMore_btn');
-
-readMoreButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        let hideText = button.previousElementSibling; 
-        hideText.classList.toggle('visible');
-        
-        if (hideText.classList.contains('visible')) {
-            button.innerHTML = 'Leer menos';
-        } else {
-            button.innerHTML = 'Leer más';
-        }
-    });
-});
-  
       const backToTopButton = document.getElementById('back-to-top');
 
 if (backToTopButton) {
